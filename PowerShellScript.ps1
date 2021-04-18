@@ -8,13 +8,23 @@ function global:OnApplicationStopped()
 
 function global:ImportCategories()
 {
+    # Temporarily fix since i dont know
+    $catsObjs = New-Object System.Collections.Generic.List[Playnite.SDK.Models.Category]
+    $cats = "Played","Played (BLACK)","Played (RED)","Played (Yellow)","Potential","Playing","Trash"
+
+
+
     # Import TAB delimited file
     $csvData = Import-Csv -Delimiter "`t" -Path G:\Projects\github-repos\playnite-galaxy2-categories-importer\gameDB.csv
 
     $PlayniteApi.Dialogs.ShowMessage("Loaded csv")
+
+    foreach ($cat in $cats) {
+        $temp = New-Object Playnite.SDK.Models.Category($cat)
+        $PlayniteApi.Database.Categories.Add($temp)
+        $catsObjs.Add($temp);
+    }
     
-    $testcat = New-Object Playnite.SDK.Models.Category('test')
-    $PlayniteApi.Database.Categories.Add($testcat)
     $PlayniteApi.Dialogs.ShowMessage("Created new category")
 
     $games = $PlayniteApi.Database.Games
@@ -24,8 +34,14 @@ function global:ImportCategories()
         if ($temp -ne $null){
             # Found something good :)
             if ($temp.tags -ne ""){
-                $PlayniteApi.Dialogs.ShowMessage($temp.title)
-                $PlayniteApi.Dialogs.ShowMessage($temp.tags)
+                foreach ($cat in $catsObjs) {
+                    if ($cat.Name -like $temp.tags){
+                        if ($game.CategoryIds -eq $null){
+                            $game.CategoryIds = New-Object System.Collections.Generic.List[System.Guid]
+                        }
+                        $game.CategoryIds.Add($cat.Id)
+                    }
+                }
             }
         }
     }
