@@ -6,7 +6,7 @@ function global:OnApplicationStopped()
 {
 }
 
-function global:ImprotCategories()
+function global:ImportCategories()
 {
     $games = $PlayniteApi.Database.Games
 
@@ -29,13 +29,24 @@ function global:ImprotCategories()
     $PlayniteApi.Dialogs.ShowMessage("Search is done")
 }
 
+function global:GetCsv()
+{
+    # Import TAB delimited file
+    $data = Import-Csv -Delimiter "`t" -Path G:\Projects\github-repos\playnite-galaxy2-categories-importer\gameDB.csv
+    $searchTerm = "20XX"
+    $test = $data | Where-Object {$_.title -match $searchTerm}
+    $PlayniteApi.Dialogs.ShowMessage($test.title)
+}
+
+
 function global:GetMainMenuItems()
 {
     param($menuArgs)
 
     $menuItem = New-Object Playnite.SDK.Plugins.ScriptMainMenuItem
     $menuItem.Description = "Import GOG 2.0 Categories..."
-    $menuItem.FunctionName = "ImprotCategories"
+    #$menuItem.FunctionName = "ImprotCategories"
+    $menuItem.FunctionName = "GetCsv"
     $menuItem.MenuSection = "@"
     return $menuItem
 }
